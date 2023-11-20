@@ -1,26 +1,66 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
+import { login, logout } from './services/authService';
+import { BrowserRouter } from 'react-router-dom';
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+interface Dog {
+  id: string;
+  img: string;
+  name: string;
+  age: number;
+  zip_code: string;
+  breed: string;
 }
+
+interface Location {
+  zip_code: string;
+  latitude: number;
+  longitude: number;
+  city: string;
+  state: string;
+  county: string;
+}
+interface Coordinates {
+  lat: number;
+  lon: number;
+}
+
+const App = () => {
+  const [isAuth, setIsAuth] = useState(false);
+
+  const handleLogin = async () => {
+    try {
+      const response = await login('testName', 'email@gmail.com');
+      setIsAuth(true);
+      console.log(response.message);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsAuth(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <BrowserRouter>
+      <div>
+        {isAuth ? (
+          <>
+            <button onClick={handleLogout}>Logout</button>
+          </>
+        ) : (
+          <button onClick={handleLogin}>Login</button>
+        )
+        }
+      </div>
+    </BrowserRouter>
+  );
+};
 
 export default App;
