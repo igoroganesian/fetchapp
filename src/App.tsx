@@ -4,14 +4,16 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import SearchForm from './components/SearchForm';
 import './App.css';
 
-interface Dog {
-  id: string;
-  img: string;
-  name: string;
-  age: number;
-  zip_code: string;
-  breed: string;
-}
+/** REFERENCE */
+
+// interface Dog {
+//   id: string;
+//   img: string;
+//   name: string;
+//   age: number;
+//   zip_code: string;
+//   breed: string;
+// }
 
 interface SearchParams {
   breeds?: string;
@@ -25,6 +27,7 @@ interface SearchParams {
 
 const App = () => {
   const [isAuth, setIsAuth] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
 
   const handleLogin = async () => {
     try {
@@ -48,6 +51,8 @@ const App = () => {
   const handleSearch = async (searchParams: SearchParams) => {
     try {
       const queryParams = new URLSearchParams();
+
+      // breeds
       if (searchParams.breeds) {
         searchParams.breeds.split(',').forEach(breed => {
           const formattedBreed = breed.trim()
@@ -58,6 +63,20 @@ const App = () => {
         });
       }
 
+      // zipCodes
+      if (searchParams.zipCodes) {
+        searchParams.zipCodes.split(',').forEach(zipCode => {
+          queryParams.append('zipCode', zipCode.trim());
+        });
+      }
+
+      // ageMin, ageMax, size, from, and sort
+      if (searchParams.ageMin) queryParams.append('ageMin', searchParams.ageMin.toString());
+      if (searchParams.ageMax) queryParams.append('ageMax', searchParams.ageMax.toString());
+      if (searchParams.size) queryParams.append('size', searchParams.size.toString());
+      if (searchParams.from) queryParams.append('from', searchParams.from);
+      if (searchParams.sort) queryParams.append('sort', searchParams.sort);
+
       const response = await fetch(`https://frontend-take-home-service.fetch.com/dogs/search?${queryParams.toString()}`, {
         credentials: 'include',
       });
@@ -66,11 +85,28 @@ const App = () => {
         throw new Error('Error searching for dogs');
       }
 
-      const data = await response.text();
-      console.log("response data: ", data);
+      const data = await response.json();
+      setSearchResults(data.resultIds);
+      console.log("searchResults: ", searchResults);
     } catch (error) {
       console.error('Search error:', error);
     }
+  };
+
+  const renderSearchResults = () => {
+    if (searchResults.length === 0) {
+      return <p>No results found.</p>;
+    }
+
+    return (
+      <ul>
+        {searchResults.map(dogId => (
+          <li key={dogId}>
+            <a href={`/dogs/${dogId}`}>{dogId}</a>
+          </li>
+        ))}
+      </ul>
+    );
   };
 
   return (
@@ -99,6 +135,9 @@ const App = () => {
           }
         />
       </Routes>
+      <div>
+        {renderSearchResults()}
+      </div>
     </BrowserRouter>
   );
 };
