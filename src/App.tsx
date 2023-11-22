@@ -28,6 +28,7 @@ interface SearchParams {
 const App = () => {
   const [isAuth, setIsAuth] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
+  const [selectedDogIds, setSelectedDogIds] = useState<string[]>([]);
 
   const handleLogin = async () => {
     try {
@@ -93,6 +94,18 @@ const App = () => {
     }
   };
 
+  const handleCheckboxChange = (dogId: string) => {
+    setSelectedDogIds(prevSelected => {
+      if (prevSelected.includes(dogId)) {
+        console.log(selectedDogIds);
+        return prevSelected.filter(id => id !== dogId);
+      } else {
+        console.log(selectedDogIds);
+        return [...prevSelected, dogId];
+      }
+    });
+  };
+
   const renderSearchResults = () => {
     if (searchResults.length === 0) {
       return <p>No results found.</p>;
@@ -102,7 +115,12 @@ const App = () => {
       <ul>
         {searchResults.map(dogId => (
           <li key={dogId}>
-            <a href={`/dogs/${dogId}`}>{dogId}</a>
+            <input
+              type="checkbox"
+              id={`checkbox-${dogId}`}
+              onChange={() => handleCheckboxChange(dogId)}
+            />
+            <label htmlFor={`checkbox-${dogId}`}>{dogId}</label>
           </li>
         ))}
       </ul>
