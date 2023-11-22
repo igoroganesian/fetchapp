@@ -106,6 +106,35 @@ const App = () => {
     });
   };
 
+  const fetchDogs = async () => {
+    try {
+      if (selectedDogIds.length === 0 || selectedDogIds.length > 100) {
+        throw new Error("Please select between 1 to 100 dogs.");
+      }
+      // const payload = JSON.stringify(selectedDogIds);
+      // console.log("Payload being sent:", payload);
+
+      const response = await fetch('https://frontend-take-home-service.fetch.com/dogs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(selectedDogIds),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Error fetching dogs');
+      }
+
+      const dogData = await response.json();
+      console.log("Fetched Dogs: ", dogData);
+      // You can do something with the dogData here, like setting it to state or processing it further
+    } catch (error) {
+      console.error('Error in fetchDogs:', error);
+    }
+  };
+
   const renderSearchResults = () => {
     if (searchResults.length === 0) {
       return <p>No results found.</p>;
@@ -113,6 +142,7 @@ const App = () => {
 
     return (
       <ul>
+        <button onClick={fetchDogs}>Fetch Selected Dogs</button>
         {searchResults.map(dogId => (
           <li key={dogId}>
             <input
