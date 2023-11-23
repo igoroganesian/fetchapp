@@ -61,7 +61,7 @@ const App = () => {
             .split(' ')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
             .join(' ');
-          queryParams.append('breed', formattedBreed);
+          queryParams.append('breeds', formattedBreed);
         });
       }
 
@@ -79,6 +79,7 @@ const App = () => {
       if (searchParams.from) queryParams.append('from', searchParams.from);
       if (searchParams.sort) queryParams.append('sort', searchParams.sort);
 
+      console.log("FULL URL: ", `https://frontend-take-home-service.fetch.com/dogs/search?${queryParams.toString()}`);
       const response = await fetch(`https://frontend-take-home-service.fetch.com/dogs/search?${queryParams.toString()}`, {
         credentials: 'include',
       });
