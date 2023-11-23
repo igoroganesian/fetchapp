@@ -6,14 +6,14 @@ import './App.css';
 
 /** REFERENCE */
 
-// interface Dog {
-//   id: string;
-//   img: string;
-//   name: string;
-//   age: number;
-//   zip_code: string;
-//   breed: string;
-// }
+interface Dog {
+  id: string;
+  img: string;
+  name: string;
+  age: number;
+  zip_code: string;
+  breed: string;
+}
 
 interface SearchParams {
   breeds?: string;
@@ -29,6 +29,7 @@ const App = () => {
   const [isAuth, setIsAuth] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [selectedDogIds, setSelectedDogIds] = useState<string[]>([]);
+  const [fetchedDogs, setFetchedDogs] = useState<Dog[]>([]);
 
   const handleLogin = async () => {
     try {
@@ -111,8 +112,6 @@ const App = () => {
       if (selectedDogIds.length === 0 || selectedDogIds.length > 100) {
         throw new Error("Please select between 1 to 100 dogs.");
       }
-      // const payload = JSON.stringify(selectedDogIds);
-      // console.log("Payload being sent:", payload);
 
       const response = await fetch('https://frontend-take-home-service.fetch.com/dogs', {
         method: 'POST',
@@ -128,11 +127,36 @@ const App = () => {
       }
 
       const dogData = await response.json();
+      setFetchedDogs(dogData);
       console.log("Fetched Dogs: ", dogData);
-      // You can do something with the dogData here, like setting it to state or processing it further
     } catch (error) {
       console.error('Error in fetchDogs:', error);
     }
+  };
+
+  const renderFetchedDogs = () => {
+    if (fetchedDogs.length === 0) {
+      return <p>No dogs fetched yet.</p>;
+    }
+
+    return (
+      <div>
+        <h2>Fetched Dogs</h2>
+        <ul>
+          {fetchedDogs.map(dog => (
+            <div key={dog.id} className='fetchedDog'>
+              <img src={dog.img} alt={dog.name} />
+              <div className='fetchedDog-text'>
+                <p>Name: {dog.name}</p>
+                <p>Age: {dog.age}</p>
+                <p>Zip Code: {dog.zip_code}</p>
+                <p>Breed: {dog.breed}</p>
+              </div>
+            </div>
+          ))}
+        </ul>
+      </div>
+    );
   };
 
   const renderSearchResults = () => {
@@ -183,8 +207,11 @@ const App = () => {
           }
         />
       </Routes>
-      <div>
+      <div className='searchResults'>
         {renderSearchResults()}
+      </div>
+      <div className='fetchedDogs'>
+        {renderFetchedDogs()}
       </div>
     </BrowserRouter>
   );

@@ -36,3 +36,23 @@
     transform: rotate(360deg);
   }
 }
+
+img {
+  width: 200px;
+  height: auto;
+}
+
+.fetchedDog {
+  display: flex;
+  margin: .5em 0;
+}
+
+.fetchedDog-text {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1em;
+}
+
+.fetchedDogs {
+  display: flex;
+}
