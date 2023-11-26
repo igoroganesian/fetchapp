@@ -31,6 +31,8 @@ const App = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedDogIds, setSelectedDogIds] = useState<string[]>([]);
   const [fetchedDogs, setFetchedDogs] = useState<Dog[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [showFetchedDogs, setShowFetchedDogs] = useState(false);
 
   useEffect(() => {
     const fetchBreeds = async () => {
@@ -114,7 +116,8 @@ const App = () => {
 
       const data = await response.json();
       setSearchResults(data.resultIds);
-      console.log("searchResults: ", searchResults);
+      setShowSearchResults(true);
+      // console.log("searchResults: ", searchResults);
     } catch (error) {
       console.error('Search error:', error);
     }
@@ -153,15 +156,16 @@ const App = () => {
 
       const dogData = await response.json();
       setFetchedDogs(dogData);
-      console.log("Fetched Dogs: ", dogData);
+      setShowFetchedDogs(true);
+      // console.log("Fetched Dogs: ", dogData);
     } catch (error) {
       console.error('Error in fetchDogs:', error);
     }
   };
 
   const renderFetchedDogs = () => {
-    if (fetchedDogs.length === 0) {
-      return <p>No dogs fetched yet.</p>;
+    if (!showFetchedDogs || fetchedDogs.length === 0) {
+      return null;
     }
 
     return (
@@ -185,8 +189,8 @@ const App = () => {
   };
 
   const renderSearchResults = () => {
-    if (searchResults.length === 0) {
-      return <p>No results found.</p>;
+    if (!showSearchResults || searchResults.length === 0) {
+      return null;
     }
 
     return (
@@ -208,14 +212,15 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <div>
+    <div className={isAuth ? 'loggedIn' : ''}>
+      <div className='buttonContainer'>
         {isAuth ? (
           <>
-            <button onClick={handleLogout}>Logout</button>
+            <button className='logoutButton' onClick={handleLogout}>Logout</button>
             <Navigate to="/search" />
           </>
         ) : (
-          <button onClick={handleLogin}>Login</button>
+          <button className='loginButton' onClick={handleLogin}>Login</button>
         )}
       </div>
       <Routes>
@@ -238,6 +243,7 @@ const App = () => {
       <div className='fetchedDogs'>
         {renderFetchedDogs()}
       </div>
+    </div>
     </BrowserRouter>
   );
 };
