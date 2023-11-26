@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { login, logout } from './services/authService';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import LoginForm from './components/LoginForm';
 import SearchForm from './components/SearchForm';
 import './App.css';
 
@@ -33,6 +34,7 @@ const App = () => {
   const [fetchedDogs, setFetchedDogs] = useState<Dog[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [showFetchedDogs, setShowFetchedDogs] = useState(false);
+  const [showSearchForm, setShowSearchForm] = useState(false);
 
   useEffect(() => {
     const fetchBreeds = async () => {
@@ -54,9 +56,9 @@ const App = () => {
     fetchBreeds();
   }, []);
 
-  const handleLogin = async () => {
+  const handleLogin = async (username: string, email: string) => {
     try {
-      const response = await login('testName', 'email@gmail.com');
+      const response = await login(username, email);
       setIsAuth(true);
       console.log(response.message);
     } catch (error) {
@@ -188,6 +190,10 @@ const App = () => {
     );
   };
 
+  const toggleSearchForm = () => {
+    setShowSearchForm(prevState => !prevState);
+  };
+
   const renderSearchResults = () => {
     if (!showSearchResults || searchResults.length === 0) {
       return null;
@@ -212,38 +218,39 @@ const App = () => {
 
   return (
     <BrowserRouter>
-    <div className={isAuth ? 'loggedIn' : ''}>
-      <div className='buttonContainer'>
+      <div className={isAuth ? 'loggedIn' : ''}>
         {isAuth ? (
           <>
             <button className='logoutButton' onClick={handleLogout}>Logout</button>
             <Navigate to="/search" />
           </>
         ) : (
-          <button className='loginButton' onClick={handleLogin}>Login</button>
+          <LoginForm onLogin={handleLogin} />
         )}
+        <Routes>
+          <Route
+            path="/search"
+            element={
+              isAuth ? (
+                <>
+                  <button className='searchToggleButton' onClick={toggleSearchForm}>
+                    {showSearchForm ? "Hide Search Form" : "Show Search Form"}
+                  </button>
+                  {showSearchForm && <SearchForm onSearch={handleSearch} breeds={dogBreeds} />}
+                </>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+        </Routes>
+        <div className='searchResults'>
+          {renderSearchResults()}
+        </div>
+        <div className='fetchedDogs'>
+          {renderFetchedDogs()}
+        </div>
       </div>
-      <Routes>
-        <Route
-          path="/search"
-          element={
-            isAuth ? (
-              <>
-                <SearchForm onSearch={handleSearch} breeds={dogBreeds} />
-              </>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-      </Routes>
-      <div className='searchResults'>
-        {renderSearchResults()}
-      </div>
-      <div className='fetchedDogs'>
-        {renderFetchedDogs()}
-      </div>
-    </div>
     </BrowserRouter>
   );
 };
