@@ -27,9 +27,30 @@ interface SearchParams {
 
 const App = () => {
   const [isAuth, setIsAuth] = useState(false);
+  const [dogBreeds, setDogBreeds] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [selectedDogIds, setSelectedDogIds] = useState<string[]>([]);
   const [fetchedDogs, setFetchedDogs] = useState<Dog[]>([]);
+
+  useEffect(() => {
+    const fetchBreeds = async () => {
+      try {
+        const response = await fetch('https://frontend-take-home-service.fetch.com/dogs/breeds', {
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          throw new Error('Error fetching breeds');
+        }
+        const breeds = await response.json();
+        console.log("breeds: ", breeds);
+        setDogBreeds(breeds);
+      } catch (error) {
+        console.error('Error in fetchBreeds:', error);
+      }
+    };
+
+    fetchBreeds();
+  }, []);
 
   const handleLogin = async () => {
     try {
@@ -45,6 +66,9 @@ const App = () => {
     try {
       await logout();
       setIsAuth(false);
+      setSearchResults([]);
+      setSelectedDogIds([]);
+      setFetchedDogs([]);
     } catch (error) {
       console.error(error);
     }
@@ -53,7 +77,7 @@ const App = () => {
   const handleSearch = async (searchParams: SearchParams) => {
     try {
       const queryParams = new URLSearchParams();
-
+      // console.log("dogBreeds: ", dogBreeds);
       // breeds
       if (searchParams.breeds) {
         searchParams.breeds.split(',').forEach(breed => {
@@ -68,7 +92,7 @@ const App = () => {
       // zipCodes
       if (searchParams.zipCodes) {
         searchParams.zipCodes.split(',').forEach(zipCode => {
-          queryParams.append('zipCode', zipCode.trim());
+          queryParams.append('zipCodes', zipCode.trim());
         });
       }
 
@@ -79,7 +103,7 @@ const App = () => {
       if (searchParams.from) queryParams.append('from', searchParams.from);
       if (searchParams.sort) queryParams.append('sort', searchParams.sort);
 
-      console.log("FULL URL: ", `https://frontend-take-home-service.fetch.com/dogs/search?${queryParams.toString()}`);
+      // console.log("FULL URL: ", `https://frontend-take-home-service.fetch.com/dogs/search?${queryParams.toString()}`);
       const response = await fetch(`https://frontend-take-home-service.fetch.com/dogs/search?${queryParams.toString()}`, {
         credentials: 'include',
       });
@@ -200,7 +224,7 @@ const App = () => {
           element={
             isAuth ? (
               <>
-                <SearchForm onSearch={handleSearch} />
+                <SearchForm onSearch={handleSearch} breeds={dogBreeds} />
               </>
             ) : (
               <Navigate to="/login" />

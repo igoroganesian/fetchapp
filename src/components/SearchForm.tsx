@@ -13,6 +13,7 @@ interface SearchParams {
 
 interface SearchFormProps {
   onSearch: (searchParams: SearchParams) => void;
+  breeds: string[];
 }
 
 const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
