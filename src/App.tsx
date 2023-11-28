@@ -30,11 +30,12 @@ const App = () => {
   const [isAuth, setIsAuth] = useState(false);
   const [dogBreeds, setDogBreeds] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
-  const [selectedDogIds, setSelectedDogIds] = useState<string[]>([]);
+  const [dogIds, setSelectedDogIds] = useState<string[]>([]);
   const [fetchedDogs, setFetchedDogs] = useState<Dog[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [showFetchedDogs, setShowFetchedDogs] = useState(false);
   const [showSearchForm, setShowSearchForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchBreeds = async () => {
@@ -79,6 +80,7 @@ const App = () => {
   };
 
   const handleSearch = async (searchParams: SearchParams) => {
+    setIsLoading(true);
     try {
       const queryParams = new URLSearchParams();
       // console.log("dogBreeds: ", dogBreeds);
@@ -117,29 +119,33 @@ const App = () => {
       }
 
       const data = await response.json();
-      setSearchResults(data.resultIds);
-      setShowSearchResults(true);
-      // console.log("searchResults: ", searchResults);
+      if (data.resultIds.length > 0) {
+        await fetchDogsDetails(data.resultIds); // Fetch dog details after search
+      } else {
+        setFetchedDogs([]); // Set empty array if no results
+      }
+      setIsLoading(false); // Reset loading state
     } catch (error) {
       console.error('Search error:', error);
+      setIsLoading(false); // Reset loading state in case of error
     }
   };
 
   const handleCheckboxChange = (dogId: string) => {
     setSelectedDogIds(prevSelected => {
       if (prevSelected.includes(dogId)) {
-        console.log(selectedDogIds);
+        console.log(dogIds);
         return prevSelected.filter(id => id !== dogId);
       } else {
-        console.log(selectedDogIds);
+        console.log(dogIds);
         return [...prevSelected, dogId];
       }
     });
   };
 
-  const fetchDogs = async () => {
+  const fetchDogsDetails = async (dogIds: string[]) => {
     try {
-      if (selectedDogIds.length === 0 || selectedDogIds.length > 100) {
+      if (dogIds.length === 0 || dogIds.length > 100) {
         throw new Error("Please select between 1 to 100 dogs.");
       }
 
@@ -148,7 +154,7 @@ const App = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(selectedDogIds),
+        body: JSON.stringify(dogIds),
         credentials: 'include',
       });
 
@@ -157,6 +163,7 @@ const App = () => {
       }
 
       const dogData = await response.json();
+      console.log("DOG DATA: ", dogData);
       setFetchedDogs(dogData);
       setShowFetchedDogs(true);
       // console.log("Fetched Dogs: ", dogData);
@@ -195,13 +202,19 @@ const App = () => {
   };
 
   const renderSearchResults = () => {
+    if (isLoading) {
+      return <div>Loading...</div>;
+    }
+    if (!showFetchedDogs || fetchedDogs.length === 0) {
+      return null;
+    }
     if (!showSearchResults || searchResults.length === 0) {
       return null;
     }
 
     return (
       <ul>
-        <button onClick={fetchDogs}>Fetch Selected Dogs</button>
+        <button onClick={() => fetchDogsDetails(dogIds)}>Fetch Selected Dogs</button>
         {searchResults.map(dogId => (
           <li key={dogId}>
             <input
