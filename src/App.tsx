@@ -31,6 +31,7 @@ const App = () => {
   const [dogBreeds, setDogBreeds] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [dogIds, setSelectedDogIds] = useState<string[]>([]);
+  const [favoriteDogs, setFavoriteDogs] = useState<string[]>([]);
   const [fetchedDogs, setFetchedDogs] = useState<Dog[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [showFetchedDogs, setShowFetchedDogs] = useState(false);
@@ -47,7 +48,7 @@ const App = () => {
           throw new Error('Error fetching breeds');
         }
         const breeds = await response.json();
-        console.log("breeds: ", breeds);
+        // console.log("breeds: ", breeds);
         setDogBreeds(breeds);
       } catch (error) {
         console.error('Error in fetchBreeds:', error);
@@ -132,15 +133,11 @@ const App = () => {
   };
 
   const handleCheckboxChange = (dogId: string) => {
-    setSelectedDogIds(prevSelected => {
-      if (prevSelected.includes(dogId)) {
-        console.log(dogIds);
-        return prevSelected.filter(id => id !== dogId);
-      } else {
-        console.log(dogIds);
-        return [...prevSelected, dogId];
-      }
-    });
+    if (favoriteDogs.includes(dogId)) {
+      setFavoriteDogs(favoriteDogs.filter(id => id !== dogId));
+    } else {
+      setFavoriteDogs([...favoriteDogs, dogId]);
+    }
   };
 
   const fetchDogsDetails = async (dogIds: string[]) => {
@@ -189,6 +186,14 @@ const App = () => {
                 <p>Age: {dog.age}</p>
                 <p>Zip Code: {dog.zip_code}</p>
                 <p>Breed: {dog.breed}</p>
+                <label>
+                  <input
+                  type="checkbox"
+                  checked={favoriteDogs.includes(dog.id)}
+                  onChange={() => handleCheckboxChange(dog.id)}
+                  />
+                  Add to Favorites
+              </label>
               </div>
             </div>
           ))}
