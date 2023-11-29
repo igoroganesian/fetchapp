@@ -234,6 +234,28 @@ const App = () => {
     );
   };
 
+  const matchDogs = async () => {
+    try {
+      const response = await fetch('https://frontend-take-home-service.fetch.com/dogs/match', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(favoriteDogs),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Matched Dog ID: ", data.match);
+    } catch (error) {
+      console.error("Error fetching match: ", error);
+    }
+  };
+
   return (
     <BrowserRouter>
       <div className={isAuth ? 'loggedIn' : ''}>
@@ -262,6 +284,7 @@ const App = () => {
             }
           />
         </Routes>
+        <button className='matchButton' onClick={matchDogs}>Find Match</button>
         <div className='searchResults'>
           {renderSearchResults()}
         </div>
